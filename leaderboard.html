@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Static Discord Bot leveling leaderboard.">
+  <meta name="theme-color" content="#05070d">
+  <title>Static — Leaderboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg:#03050a; --panel:#080c15; --panel-2:#0c1220;
+      --text:#e8f6ff; --muted:#9bb0c2;
+      --cyan:#19e6ff; --blue:#2777ff; --purple:#8b5cff;
+      --line:rgba(80,180,255,.18);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;min-height:100vh;color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        radial-gradient(circle at 50% 0%,rgba(39,119,255,.15),transparent 34rem),
+        linear-gradient(180deg,#03050a 0%,#050811 55%,#03050a 100%);
+    }
+    a{color:var(--cyan);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{width:min(1050px,calc(100% - 24px));margin:auto}
+    header{
+      position:relative;overflow:hidden;text-align:center;
+      padding:62px 0 52px;border-bottom:1px solid var(--line)
+    }
+    .energy{
+      position:absolute;left:-5%;right:-5%;top:52%;height:2px;
+      background:linear-gradient(90deg,transparent,var(--blue) 22%,var(--cyan) 50%,var(--purple) 76%,transparent);
+      box-shadow:0 0 8px var(--cyan),0 0 28px rgba(25,230,255,.55);
+      opacity:.72;transform:rotate(-2deg)
+    }
+    .mark{
+      position:relative;z-index:1;display:grid;place-items:center;
+      width:62px;height:62px;margin:0 auto 18px;
+      border:1px solid rgba(25,230,255,.5);border-radius:16px;
+      background:linear-gradient(145deg,rgba(39,119,255,.25),rgba(139,92,255,.12));
+      box-shadow:inset 0 0 22px rgba(25,230,255,.08),0 0 28px rgba(39,119,255,.18);
+      color:var(--cyan);font-size:30px;font-weight:900;letter-spacing:-3px;transform:skew(-7deg)
+    }
+    h1{
+      position:relative;z-index:1;margin:0;
+      font-size:clamp(2.6rem,8vw,5rem);line-height:1;
+      letter-spacing:.08em;font-weight:900;color:#f5fdff;
+      text-shadow:0 0 10px rgba(25,230,255,.55),0 0 35px rgba(39,119,255,.3)
+    }
+    .subtitle{position:relative;z-index:1;margin:16px auto 0;color:var(--muted);font-size:1.05rem}
+    main{padding:42px 0 70px}
+    .toolbar{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;margin-bottom:18px
+    }
+    .server{
+      flex:1;min-width:220px;padding:12px 14px;
+      border:1px solid var(--line);border-radius:12px;
+      background:rgba(8,12,21,.9);color:var(--text);font:inherit
+    }
+    .status{
+      padding:10px 14px;border:1px solid var(--line);border-radius:999px;
+      color:#a9c9dc;background:rgba(8,12,21,.72);font-size:.88rem
+    }
+    .board{
+      overflow:hidden;border:1px solid var(--line);border-radius:20px;
+      background:linear-gradient(145deg,rgba(12,18,32,.96),rgba(5,8,15,.96));
+      box-shadow:0 18px 55px rgba(0,0,0,.45)
+    }
+    .board-head,.row{
+      display:grid;grid-template-columns:64px minmax(0,1fr) 110px 130px;
+      gap:12px;align-items:center
+    }
+    .board-head{
+      padding:15px 20px;border-bottom:1px solid var(--line);
+      color:#7890a1;font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase
+    }
+    .row{padding:18px 20px;border-bottom:1px solid rgba(80,180,255,.1)}
+    .row:last-child{border-bottom:0}
+    .rank{color:var(--cyan);font-weight:900}
+    .user{min-width:0;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .level,.xp{text-align:right;font-variant-numeric:tabular-nums}
+    .level{color:#e8f6ff;font-weight:800}
+    .xp{color:#a9c9dc}
+    .empty{
+      padding:64px 24px;text-align:center
+    }
+    .empty-icon{font-size:2.4rem;color:var(--cyan)}
+    .empty h2{margin:12px 0 8px}
+    .empty p{margin:0 auto;max-width:560px;color:var(--muted);line-height:1.7}
+    .note{
+      margin-top:18px;padding:16px 18px;border-left:3px solid var(--purple);
+      border-radius:0 12px 12px 0;background:rgba(139,92,255,.06);color:#cbd7e6;line-height:1.65
+    }
+    footer{
+      padding:26px 0 40px;border-top:1px solid var(--line);
+      color:#7890a1;text-align:center;font-size:.86rem
+    }
+    @media(max-width:700px){
+      .wrap{width:min(100% - 16px,1050px)}
+      .board-head,.row{grid-template-columns:48px minmax(0,1fr) 70px 95px;gap:8px}
+      .board-head{padding:13px 12px;font-size:.68rem}
+      .row{padding:16px 12px}
+      .toolbar{align-items:stretch}
+      .server{min-width:100%;order:2}
+      .status{order:1}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="energy" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="mark" aria-hidden="true">S1</div>
+      <h1>LEADERBOARD</h1>
+      <p class="subtitle">Static leveling progression, ranked by XP.</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="toolbar">
+        <select class="server" aria-label="Select server" disabled>
+          <option>Server selection will appear here</option>
+        </select>
+        <div class="status">API connection: pending</div>
+      </div>
+
+      <section class="board" aria-label="Static leveling leaderboard">
+        <div class="board-head">
+          <div>Rank</div>
+          <div>User</div>
+          <div>Level</div>
+          <div>XP</div>
+        </div>
+
+        <div class="empty">
+          <div class="empty-icon">⚡</div>
+          <h2>Leaderboard coming online</h2>
+          <p>
+            The public leaderboard interface is ready. Once Static's public API is connected,
+            this page will load eligible leveling users and rank them by their progression.
+          </p>
+        </div>
+      </section>
+
+      <div class="note">
+        <strong>Public leaderboard:</strong> Only users who participate in Static's leveling
+        system and have not excluded themselves from the public leaderboard will be shown here.
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      Static Dev Team · <a href="index.html">Home</a> ·
+      <a href="PrivacyPolicy.html">Privacy Policy</a>
+    </div>
+  </footer>
+</body>
+</html>
